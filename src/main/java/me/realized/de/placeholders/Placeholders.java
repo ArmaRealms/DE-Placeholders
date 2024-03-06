@@ -1,7 +1,5 @@
 package me.realized.de.placeholders;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import me.realized.de.placeholders.hooks.MVdWPlaceholderHook;
 import me.realized.de.placeholders.hooks.PlaceholderHook;
@@ -20,12 +18,15 @@ import me.realized.duels.api.spectate.SpectateManager;
 import me.realized.duels.api.spectate.Spectator;
 import me.realized.duels.api.user.User;
 import me.realized.duels.api.user.UserManager;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Placeholders extends DuelsExtension implements Listener {
 
@@ -34,6 +35,8 @@ public class Placeholders extends DuelsExtension implements Listener {
     private String durationFormat;
     private String noKit;
     private String noOpponent;
+    private String on;
+    private String off;
 
     @Getter
     private UserManager userManager;
@@ -54,6 +57,8 @@ public class Placeholders extends DuelsExtension implements Listener {
         this.durationFormat = config.getString("duration-format");
         this.noKit = config.getString("no-kit");
         this.noOpponent = config.getString("no-opponent");
+        this.on = config.getString("on", "on");
+        this.off = config.getString("off", "off");
 
         this.userManager = api.getUserManager();
         this.kitManager = api.getKitManager();
@@ -85,7 +90,6 @@ public class Placeholders extends DuelsExtension implements Listener {
         action.run();
     }
 
-    @SuppressWarnings("unchecked")
     private void register(final Class<? extends Updatable<Kit>> clazz) {
         try {
             updatables.add(clazz.getConstructor(Placeholders.class, Duels.class).newInstance(this, api));
@@ -200,6 +204,15 @@ public class Placeholders extends DuelsExtension implements Listener {
                 }
 
                 return String.valueOf(match.getKit() != null ? user.getRating(match.getKit()) : user.getRating());
+            }
+
+            if (identifier.equalsIgnoreCase("can_request")) {
+                user = userManager.get(player);
+                if (user == null) {
+                    return StringUtil.color(userNotFound);
+                }
+
+                return user.canRequest() ? on : off;
             }
         }
 
