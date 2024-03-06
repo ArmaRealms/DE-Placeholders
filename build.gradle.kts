@@ -1,5 +1,8 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
-    java
+    id("java")
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "me.realized.de"
@@ -29,13 +32,13 @@ repositories {
 }
 
 dependencies {
-    implementation("org.projectlombok:lombok:1.18.30")
-    implementation("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
-    implementation("me.clip:placeholderapi:2.11.5")
-    implementation("com.github.Realizedd.Duels:duels-api:3.5.1") {
-        isTransitive = false
-    }
     implementation("org.apache.commons:commons-lang3:3.14.0")
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
+    compileOnly("me.clip:placeholderapi:2.11.5")
+    compileOnly("com.github.Realizedd.Duels:duels-api:3.5.1") {
+        isTransitive = true
+    }
     compileOnly(files("libs/MVdWPlaceholderAPI-3.1.1.jar")) // Assumindo que você deseja manter como compileOnly e não como implementation
 }
 
@@ -44,9 +47,16 @@ java {
 }
 
 tasks {
+    withType<ShadowJar> {
+        relocate("org.apache.commons", "me.realized.de.placeholders.libs")
+        minimize()
+        archiveClassifier.set("")
+    }
+
     withType<Jar> {
         archiveFileName.set(archiveFileName.get().replace("DE-", ""))
     }
+
     withType<ProcessResources> {
         filesMatching("extension.yml") {
             expand("version" to project.version)
@@ -56,5 +66,9 @@ tasks {
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         options.compilerArgs.add("-parameters")
+    }
+
+    build {
+        dependsOn(shadowJar)
     }
 }
