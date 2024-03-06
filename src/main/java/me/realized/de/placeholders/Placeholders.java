@@ -223,4 +223,8 @@ public class Placeholders extends DuelsExtension implements Listener {
     public void on(final KitCreateEvent event) {
         updatables.forEach(updatable -> updatable.update(event.getKit()));
     }
+
+    public KitManager getKitManager() {
+        return kitManager;
+    }
 }
